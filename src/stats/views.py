@@ -351,10 +351,10 @@ def main(request):
                             .exclude(score_streak_current_light=0)
                             .active(tour=request.tour).order_by('-score_streak_current_light')[:10])
 
-    top_24 = top_pilots(request, query_helper_tp(request, "score").exclude(score=0))
-    top_24_heavy = top_pilots(request, query_helper_tp(request, "score_heavy").exclude(score_heavy=0))
-    top_24_medium = top_pilots(request, query_helper_tp(request, "score_medium").exclude(score_medium=0))
-    top_24_light = top_pilots(request, query_helper_tp(request, "score_light").exclude(score_light=0))
+    top_24 = top_pilots(request)
+    top_24_heavy = top_pilots(request, 'aircraft_heavy')
+    top_24_medium = top_pilots(request, 'aircraft_medium')
+    top_24_light = top_pilots(request, 'aircraft_light')
 
     coal_active_players = request.tour.coal_active_players()
     total_active_players = sum(coal_active_players.values())
@@ -408,17 +408,15 @@ def main(request):
         'coal_2_online': coal_2_online,
     })
 
-
-def query_helper_tp(request, score_type):
-    return (Sortie.objects
-                        .filter(tour_id=request.tour.id, is_disco=False, player__type='pilot', profile__is_hide=False)
+def top_pilots(request, aircraft_type="aircraft"):
+    top_24_score = (Sortie.objects
+                        .filter(tour_id=request.tour.id, is_disco=False, player__type='pilot', profile__is_hide=False, aircraft__cls__contains=aircraft_type)
                         .filter(date_start__gt=timezone.now() - timedelta(hours=24))
                         .values('player')
-                        .annotate(sum_score=Sum(score_type)))
+                        .annotate(sum_score=Sum("score"))
+                        .exclude(score=0)
+                        .order_by('-sum_score')[:10])
 
-
-def top_pilots(request, query):
-    top_24_score = query.order_by('-sum_score')[:10]
     top_24_pilots = (Player.players.pilots(tour_id=request.tour.id)
                      .filter(id__in=[s['player'] for s in top_24_score]))
     top_24_pilots = {p.id: p for p in top_24_pilots}
