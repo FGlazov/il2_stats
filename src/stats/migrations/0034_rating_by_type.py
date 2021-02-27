@@ -115,21 +115,6 @@ class Migration(migrations.Migration):
             field=models.IntegerField(db_index=True, default=0),
         ),
         migrations.AddField(
-            model_name='Sortie',
-            name='score_heavy',
-            field=models.IntegerField(default=0),
-        ),
-        migrations.AddField(
-            model_name='Sortie',
-            name='score_medium',
-            field=models.IntegerField(default=0),
-        ),
-        migrations.AddField(
-            model_name='Sortie',
-            name='score_light',
-            field=models.IntegerField(default=0),
-        ),
-        migrations.AddField(
             model_name='VLife',
             name='score_heavy',
             field=models.IntegerField(default=0, db_index=True),
